@@ -42,20 +42,29 @@ $hotels = [
 
 // Uso isset per settare il GET e con && definisco il GET
 $parcheggio_richiesto = isset($_GET['parcheggio_disponibile']) && $_GET['parcheggio_disponibile'] === 'true';
+// Prende il voto richiesto. Uso isset per settare il GET usando un ternario. Di default è 1.
+$voto_richiesto = isset($_GET['voto_richiesto']) ? $_GET['voto_richiesto'] : 1;
+// Assicura che il voto sia sempre tra 1 e 5
+$voto_richiesto = max(1, min(5, $voto_richiesto));
+
 $filteredHotels = [];  // Array con solo gli hotel da visualizzare
 
-if ($parcheggio_richiesto) {
-    // Solo hotel con parcheggio (parking: true)
-    foreach ($hotels as $hotel) {
-        if ($hotel['parking'] === true) {
-            $filteredHotels[] = $hotel;
-        }
+// Entrambi i filtri in un unico foreach
+foreach ($hotels as $hotel) {
+    // Parcheggio (solo se richiesto)
+    $parking_filter = true;
+    if ($parcheggio_richiesto) {
+        $parking_filter = $hotel['parking'] === true;
     }
-} else {
-    // Se l'utente non ha spuntato la checkbox visualizza tutti gli hotel (rendendo gli hotel filtrati uguali agli hotel non filtrati).
-    $filteredHotels = $hotels;
-}
 
+    // Voto  dell'hotel deve essere maggiore o uguale a quello richiesto
+    $vote_filter = $hotel['vote'] >= $voto_richiesto;
+
+    // Se entrambe le condizioni sono soddisfatte, aggiungi l'hotel
+    if ($parking_filter && $vote_filter) {
+        $filteredHotels[] = $hotel;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -77,22 +86,42 @@ if ($parcheggio_richiesto) {
 
     <!-- Form Filtro Parcheggio -->
     <form class="form-check mb-5 d-flex flex-column container" action='' method='GET'>
-        <br>
-        <input class="form-check-input mx-auto my-1 text-center" 
-        type="checkbox" 
-        value="true" 
-        id="checkboxParking"
-        name='parcheggio_disponibile'
-        <?php
-        // Se l'utente clicca, resta cliccato anche alla ricarica della pagina
-        if ($parcheggio_richiesto) {
-            echo 'checked';
-        }
-        ?>
+        <div class='park-input d-flex flex-column'>
+            <label class='form-check-label' for="checkboxParking">
+                Parcheggio
+            </label>
+            <input class="form-check-input mx-auto my-1 text-center" 
+            type="checkbox" 
+            value="true" 
+            id="checkboxParking"
+            name='parcheggio_disponibile'
+            <?php
+            // Se l'utente clicca, resta cliccato anche alla ricarica della pagina
+            if ($parcheggio_richiesto) {
+                echo 'checked';
+            }
+            ?>
         >
-        <label class='form-check-label' for="checkboxParking">
-                Presenza parcheggio
-        </label>
+        </div>
+        <div class='vote-input d-flex flex-column align-items-center mt-3'>
+            <label for="rangeVote" class="form-label">Voto Hotel</label>
+            <input type="range"
+            class="form-range w-25" 
+            min="1" 
+            max="5" 
+            step="1" 
+            id="rangeVote"
+            name='voto_richiesto' 
+            value='<?php echo $voto_richiesto ?>'
+            oninput="document.getElementById('currentVote').textContent = this.value">
+            <div class="d-flex w-25 justify-content-between mt-n1 text-secondary" style="font-size: 0.8rem;">
+                <span>1 Stella</span>
+                <span>2 Stelle</span>
+                <span>3 Stelle</span>
+                <span>4 Stelle</span>
+                <span>5 Stelle</span>
+            </div>
+        </div>
         <button type="submit" class="btn btn-outline-primary mt-3 btn-sm mx-auto">Filtra</button>
     </form>
 
