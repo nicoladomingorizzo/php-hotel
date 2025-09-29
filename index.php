@@ -84,7 +84,7 @@ if ($parcheggio_richiesto) {
         id="checkboxParking"
         name='parcheggio_disponibile'
         <?php
-        // Se l'utente clicca, resta cliccato
+        // Se l'utente clicca, resta cliccato anche alla ricarica della pagina
         if ($parcheggio_richiesto) {
             echo 'checked';
         }
